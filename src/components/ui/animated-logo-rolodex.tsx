@@ -1,30 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Dribbble, Github, Twitch, Figma } from "lucide-react";
-import { twMerge } from "tailwind-merge";
-
-export const DivOrigami = () => {
-  return (
-    <section className="flex h-72 flex-col items-center justify-center gap-12 bg-transparent px-4 py-24 md:flex-row">
-      <LogoRolodex
-        items={[
-          <LogoItem key={1} className="bg-red-500 text-neutral-900">
-            <Figma size={64} />
-          </LogoItem>,
-          <LogoItem key={2} className="bg-white text-neutral-900">
-            <Dribbble size={64} />
-          </LogoItem>,
-          <LogoItem key={3} className="bg-black text-white border border-neutral-700">
-            <Github size={64} />
-          </LogoItem>,
-          <LogoItem key={4} className="bg-red-600 text-white">
-            <Twitch size={64} />
-          </LogoItem>,
-        ]}
-      />
-    </section>
-  );
-};
 
 const DELAY_IN_MS = 2500;
 const TRANSITION_DURATION_IN_SECS = 1.5;
@@ -102,19 +77,6 @@ export const LogoRolodex = ({ items }: { items: React.ReactNode[] }) => {
         }}
         className="absolute left-0 right-0 top-1/2 z-[999999999] -translate-y-1/2 border-t-2 border-neutral-800"
       />
-    </div>
-  );
-};
-
-const LogoItem = ({ children, className }: { children: React.ReactNode, className?: string }) => {
-  return (
-    <div
-      className={twMerge(
-        "grid h-36 w-52 place-content-center rounded-lg bg-neutral-700 text-6xl text-neutral-50",
-        className
-      )}
-    >
-      {children}
     </div>
   );
 };
