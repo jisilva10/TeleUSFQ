@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Twig, Dribbble, Github, Twitch, Figma } from "lucide-react";
+import { Dribbble, Github, Twitch, Figma } from "lucide-react";
 import { twMerge } from "tailwind-merge";
 
 export const DivOrigami = () => {
