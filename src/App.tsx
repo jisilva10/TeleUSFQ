@@ -82,7 +82,8 @@ export default function App() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: 2 }} // 2 seconds cross fade
+          transition={{ duration: 1 }} // Reducido a 1 segundo para evitar OOM de memoria GPU en la TV
+          style={{ willChange: "opacity" }}
           className="absolute inset-0 w-full h-full object-cover z-0"
         />
       </AnimatePresence>

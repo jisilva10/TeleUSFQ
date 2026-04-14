@@ -45,6 +45,8 @@ export const LogoRolodex = ({ items }: { items: React.ReactNode[] }) => {
             clipPath: "polygon(0 0, 100% 0, 100% 50%, 0 50%)",
             zIndex: -index,
             backfaceVisibility: "hidden",
+            WebkitBackfaceVisibility: "hidden",
+            transform: "translateZ(0)",
           }}
           key={index}
           transition={{
@@ -65,6 +67,8 @@ export const LogoRolodex = ({ items }: { items: React.ReactNode[] }) => {
             clipPath: "polygon(0 50%, 100% 50%, 100% 100%, 0 100%)",
             zIndex: index,
             backfaceVisibility: "hidden",
+            WebkitBackfaceVisibility: "hidden",
+            transform: "translateZ(0)",
           }}
           key={(index + 1) * 2}
           initial={{ rotateX: "180deg" }}
