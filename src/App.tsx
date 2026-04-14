@@ -42,12 +42,21 @@ const FALLBACK_IMAGES = [
 const IMAGES = MAPPED_ARTES.length > 0 ? MAPPED_ARTES : FALLBACK_IMAGES;
 
 export default function App() {
-  const [currentImage, setCurrentImage] = useState(0);
+  const [imageIndex, setImageIndex] = useState(0);
+  const [opacity, setOpacity] = useState(1);
   const [isFullscreen, setIsFullscreen] = useState(false);
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setCurrentImage((prev) => (prev + 1) % IMAGES.length);
+      // 1. Empezamos a desvanecer la imagen a negro
+      setOpacity(0);
+      
+      // 2. Esperamos a que termine el fade (1 segundo), cambiamos la imagen
+      // y la volvemos a aparecer. Esto garantiza 1 sola textura en VRAM a la vez.
+      setTimeout(() => {
+        setImageIndex((prev) => (prev + 1) % IMAGES.length);
+        setOpacity(1);
+      }, 1000);
     }, 10000); // 10 seconds
     return () => clearInterval(interval);
   }, []);
@@ -74,19 +83,15 @@ export default function App() {
 
   return (
     <div className="relative w-screen h-screen overflow-hidden bg-black font-sans group">
-      {/* Background Image Slider */}
-      <AnimatePresence>
-        <MotionImg
-          key={currentImage}
-          src={IMAGES[currentImage]}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 1 }} // Reducido a 1 segundo para evitar OOM de memoria GPU en la TV
-          style={{ willChange: "opacity" }}
-          className="absolute inset-0 w-full h-full object-cover z-0"
-        />
-      </AnimatePresence>
+      {/* Background Image Slider - Optimizacion de Memoria Extrema: Una sola etiqueta <img> renderizada */}
+      <MotionImg
+        key="single-image-renderer"
+        src={IMAGES[imageIndex]}
+        animate={{ opacity }}
+        transition={{ duration: 1, ease: "easeInOut" }}
+        style={{ willChange: "opacity" }}
+        className="absolute inset-0 w-full h-full object-cover z-0"
+      />
 
       {/* Visual Texture removed to keep background at full color */}
 
@@ -95,17 +100,17 @@ export default function App() {
         {/* Top Header and Carousel */}
         <div className="w-full flex justify-between items-start pointer-events-auto">
           {/* Top Left Carousel */}
-          <div className="scale-75 origin-top-left transition-all duration-1000">
+          <div className="scale-75 origin-top-left transition-all duration-1000 shadow-2xl rounded-xl">
             {MAPPED_LOGOS.length > 0 ? (
               <LogoRolodex items={MAPPED_LOGOS.map((src, i) => (
-                <div key={i} className="grid h-36 w-52 place-content-center rounded-lg bg-neutral-800 border border-neutral-700 overflow-hidden relative">
-                  <img src={src} className="absolute inset-0 w-full h-full object-contain p-4 bg-white" alt="logo" />
+                <div key={i} className="h-full w-full bg-white flex items-center justify-center relative">
+                  <img src={src} className="w-full h-full object-contain p-4 bg-white" alt="logo" />
                 </div>
               ))} />
             ) : (
               <LogoRolodex items={[
-                <div key={1} className="grid h-36 w-52 place-content-center rounded-lg bg-red-600 text-3xl font-black text-white text-center">AGREGA<br/>LOGOS</div>,
-                <div key={2} className="grid h-36 w-52 place-content-center rounded-lg bg-white text-3xl font-black text-black text-center">A LA<br/>CARPETA</div>
+                <div key={1} className="h-full w-full bg-white grid place-content-center text-3xl font-black text-black text-center">AGREGA<br/>LOGOS</div>,
+                <div key={2} className="h-full w-full bg-gray-200 grid place-content-center text-3xl font-black text-black text-center">A LA<br/>CARPETA</div>
               ]} />
             )}
           </div>
