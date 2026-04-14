@@ -1,6 +1,15 @@
 import React, { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 
+if (typeof motion === 'undefined') {
+  throw new Error("FATAL: 'motion' object from framer-motion is UNDEFINED. SystemJS import failed.");
+}
+const MotionDiv = motion.div || (typeof motion === "function" ? motion("div") : null);
+
+if (!MotionDiv) {
+  throw new Error("FATAL: 'motion.div' and 'motion(\"div\")' are both undefined. TV JS engine unsupported.");
+}
+
 const DELAY_IN_MS = 2500;
 const TRANSITION_DURATION_IN_SECS = 1.5;
 
@@ -29,7 +38,7 @@ export const LogoRolodex = ({ items }: { items: React.ReactNode[] }) => {
       className="relative z-0 h-44 w-60 shrink-0 rounded-xl border border-neutral-700 bg-neutral-800"
     >
       <AnimatePresence mode="sync">
-        <motion.div
+        <MotionDiv
           style={{
             y: "-50%",
             x: "-50%",
@@ -48,8 +57,8 @@ export const LogoRolodex = ({ items }: { items: React.ReactNode[] }) => {
           className="absolute left-1/2 top-1/2"
         >
           {items[index % items.length]}
-        </motion.div>
-        <motion.div
+        </MotionDiv>
+        <MotionDiv
           style={{
             y: "-50%",
             x: "-50%",
@@ -68,7 +77,7 @@ export const LogoRolodex = ({ items }: { items: React.ReactNode[] }) => {
           className="absolute left-1/2 top-1/2"
         >
           {items[index % items.length]}
-        </motion.div>
+        </MotionDiv>
       </AnimatePresence>
 
       <hr
