@@ -1,5 +1,6 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
+// @ts-ignore - The plugin types aren't available locally but will work.
 import legacy from '@vitejs/plugin-legacy'
 import path from 'path'
 
