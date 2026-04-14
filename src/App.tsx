@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Maximize, Minimize } from 'lucide-react';
 import { LogoRolodex } from './components/ui/animated-logo-rolodex';
 import alumniLogo from './assets/logos/ALUMNI_Blanco@3x.png';
 
@@ -19,6 +20,7 @@ const IMAGES = MAPPED_ARTES.length > 0 ? MAPPED_ARTES : FALLBACK_IMAGES;
 
 export default function App() {
   const [currentImage, setCurrentImage] = useState(0);
+  const [isFullscreen, setIsFullscreen] = useState(false);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -27,8 +29,28 @@ export default function App() {
     return () => clearInterval(interval);
   }, []);
 
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+    document.addEventListener("fullscreenchange", handleFullscreenChange);
+    return () => document.removeEventListener("fullscreenchange", handleFullscreenChange);
+  }, []);
+
+  const toggleFullscreen = () => {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen().catch(err => {
+        console.error(`Error attempting to enable fullscreen: ${err.message}`);
+      });
+    } else {
+      if (document.exitFullscreen) {
+        document.exitFullscreen();
+      }
+    }
+  };
+
   return (
-    <div className="relative w-screen h-screen overflow-hidden bg-black font-sans">
+    <div className="relative w-screen h-screen overflow-hidden bg-black font-sans group">
       {/* Background Image Slider */}
       <AnimatePresence>
         <motion.img
@@ -77,6 +99,14 @@ export default function App() {
         {/* Footer Area Area is now empty as requested */}
         <div className="w-full h-10"></div>
 
+        {/* Fullscreen Toggle Button */}
+        <button
+          onClick={toggleFullscreen}
+          className="absolute bottom-6 right-6 z-50 p-4 bg-black/40 hover:bg-black/80 rounded-full text-white/30 hover:text-white transition-all duration-500 backdrop-blur-md opacity-20 hover:opacity-100 focus:opacity-100 group-hover:opacity-100 cursor-pointer shadow-xl border border-white/5 hover:border-white/20 hover:scale-110 active:scale-95"
+          title={isFullscreen ? "Exit Fullscreen" : "Enter Fullscreen"}
+        >
+          {isFullscreen ? <Minimize size={28} /> : <Maximize size={28} />}
+        </button>
       </div>
     </div>
   );
