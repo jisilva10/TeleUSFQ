@@ -1,8 +1,15 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Maximize, Minimize } from 'lucide-react';
 import { LogoRolodex } from './components/ui/animated-logo-rolodex';
 import alumniLogo from './assets/logos/ALUMNI_Blanco@3x.png';
+
+const SvgMaximize = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
+);
+
+const SvgMinimize = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3"/></svg>
+);
 
 const arteUrls = import.meta.glob<{ default: string }>('@/assets/artes/*.{png,jpg,jpeg,webp,svg}', { eager: true });
 const MAPPED_ARTES = Object.values(arteUrls).map(mod => mod.default);
@@ -105,7 +112,7 @@ export default function App() {
           className="absolute bottom-6 right-6 z-50 p-4 bg-black/40 hover:bg-black/80 rounded-full text-white/30 hover:text-white transition-all duration-500 backdrop-blur-md opacity-20 hover:opacity-100 focus:opacity-100 group-hover:opacity-100 cursor-pointer shadow-xl border border-white/5 hover:border-white/20 hover:scale-110 active:scale-95"
           title={isFullscreen ? "Exit Fullscreen" : "Enter Fullscreen"}
         >
-          {isFullscreen ? <Minimize size={28} /> : <Maximize size={28} />}
+          {isFullscreen ? <SvgMinimize /> : <SvgMaximize />}
         </button>
       </div>
     </div>
