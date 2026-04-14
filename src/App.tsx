@@ -34,9 +34,9 @@ const logoUrls = import.meta.glob<{ default: string }>('@/assets/logos/*.{png,jp
 const MAPPED_LOGOS = Object.values(logoUrls).map(mod => mod.default);
 
 const FALLBACK_IMAGES = [
-  "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?q=80&w=2940&auto=format&fit=crop",
-  "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?q=80&w=2940&auto=format&fit=crop",
-  "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=2941&auto=format&fit=crop"
+  "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?q=80&w=1080&auto=format&fit=crop",
+  "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?q=80&w=1080&auto=format&fit=crop",
+  "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=1080&auto=format&fit=crop"
 ];
 
 const IMAGES = MAPPED_ARTES.length > 0 ? MAPPED_ARTES : FALLBACK_IMAGES;
@@ -52,7 +52,7 @@ export default function App() {
       setOpacity(0);
       
       // 2. Esperamos a que termine el fade (1 segundo), cambiamos la imagen
-      // y la volvemos a aparecer. Esto garantiza 1 sola textura en VRAM a la vez.
+      // y la volvemos a aparecer
       setTimeout(() => {
         setImageIndex((prev) => (prev + 1) % IMAGES.length);
         setOpacity(1);
@@ -83,14 +83,17 @@ export default function App() {
 
   return (
     <div className="relative w-screen h-screen overflow-hidden bg-black font-sans group">
-      {/* Background Image Slider - Optimizacion de Memoria Extrema: Una sola etiqueta <img> renderizada */}
-      <MotionImg
+      {/* Background Image Slider - Pure CSS para evitar bloqueos del JS thread en TV */}
+      <img
         key="single-image-renderer"
         src={IMAGES[imageIndex]}
-        animate={{ opacity }}
-        transition={{ duration: 1, ease: "easeInOut" }}
-        style={{ willChange: "opacity" }}
+        style={{ 
+          opacity, 
+          transition: "opacity 1s ease-in-out",
+          willChange: "opacity" 
+        }}
         className="absolute inset-0 w-full h-full object-cover z-0"
+        alt="background"
       />
 
       {/* Visual Texture removed to keep background at full color */}
