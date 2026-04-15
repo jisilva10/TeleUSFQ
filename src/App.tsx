@@ -217,8 +217,8 @@ export default function App() {
   return (
     <div className="relative w-screen h-screen overflow-hidden bg-black font-sans group">
       
-      {/* ALUMNI Logo */}
-      <div className={`absolute right-8 transition-all duration-1000 bg-black/50 backdrop-blur-md py-4 px-10 rounded-2xl shadow-2xl border border-white/10 z-[100] pointer-events-none ${displayPhase === 'cards' ? 'top-6' : 'bottom-6'}`}>
+      {/* ALUMNI Logo (Always Fixed on Top Right) */}
+      <div className="absolute top-6 right-8 bg-black/50 backdrop-blur-md py-4 px-10 rounded-2xl shadow-2xl border border-white/10 z-[100] pointer-events-none transition-all">
         <img src={alumniLogo} alt="Alumni Logo" className="h-12 md:h-16 object-contain drop-shadow-lg" />
       </div>
 
