@@ -35,9 +35,6 @@ const FALLBACK_IMAGES = [
 
 const CarouselColumn = ({ title, logos, colorStyle }: { title: string, logos: string[], colorStyle: React.CSSProperties }) => (
   <div className="flex flex-col items-center z-50 flex-1 mx-2 lg:mx-6">
-    <h2 className="text-xl lg:text-[2rem] font-black tracking-[0.2em] lg:tracking-[0.4em] uppercase mb-6 lg:mb-10 text-center" style={colorStyle}>
-      {title}
-    </h2>
     <div className="w-full origin-center transition-all duration-1000 shadow-[0_30px_60px_rgba(0,0,0,0.8)] rounded-2xl flex justify-center">
       {logos.length > 0 ? (
         <LogoRolodex items={logos.map((src, i) => (
@@ -51,6 +48,9 @@ const CarouselColumn = ({ title, logos, colorStyle }: { title: string, logos: st
         ]} />
       )}
     </div>
+    <h2 className="text-xl lg:text-[2rem] font-black tracking-[0.2em] lg:tracking-[0.4em] uppercase mt-6 lg:mt-12 text-center" style={colorStyle}>
+      {title}
+    </h2>
   </div>
 );
 
@@ -238,15 +238,6 @@ export default function App() {
              )}
           </div>
       </div>
-
-      {/* Fullscreen Toggle Button */}
-      <button
-        onClick={toggleFullscreen}
-        className="absolute bottom-6 right-6 z-[100] p-4 bg-black/40 hover:bg-black/80 rounded-full text-white/30 hover:text-white transition-all duration-500 backdrop-blur-md opacity-20 hover:opacity-100 focus:opacity-100 group-hover:opacity-100 cursor-pointer shadow-xl border border-white/5 hover:border-white/20 hover:scale-110 active:scale-95"
-        title={isFullscreen ? "Exit Fullscreen" : "Enter Fullscreen"}
-      >
-        {isFullscreen ? <SvgMinimize /> : <SvgMaximize />}
-      </button>
     </div>
   );
 }
