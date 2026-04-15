@@ -227,13 +227,29 @@ export default function App() {
           </h1>
           
           {/* We use Flexbox instead of Grid because legacy smart TVs do not support CSS Grid well */}
-          <div className="flex flex-row justify-center items-center w-full max-w-[100rem]">
+          <div className="flex flex-col items-center w-full max-w-[100rem] space-y-16 lg:space-y-24">
              {displayPhase === 'dragons' && (
                <>
-                 <CarouselColumn title="PLATINUM" logos={platinum} colorStyle={{ color: '#E5E4E2', textShadow: '0 0 15px rgba(229,228,226,0.6)' }} />
-                 <CarouselColumn title="RED" logos={red} colorStyle={{ color: '#ef4444', textShadow: '0 0 15px rgba(239,68,68,0.6)' }} />
-                 <CarouselColumn title="GOLDEN" logos={golden} colorStyle={{ color: '#fbbf24', textShadow: '0 0 15px rgba(251,191,36,0.6)' }} />
-                 <CarouselColumn title="SILVER" logos={silver} colorStyle={{ color: '#9ca3af', textShadow: '0 0 15px rgba(156,163,175,0.6)' }} />
+                 {/* Top Row: Platinum, Golden, Silver */}
+                 <div className="flex flex-row justify-center items-center w-full">
+                   <CarouselColumn title="PLATINUM" logos={platinum} colorStyle={{ color: '#E5E4E2', textShadow: '0 0 15px rgba(229,228,226,0.6)' }} />
+                   <CarouselColumn title="GOLDEN" logos={golden} colorStyle={{ color: '#fbbf24', textShadow: '0 0 15px rgba(251,191,36,0.6)' }} />
+                   <CarouselColumn title="SILVER" logos={silver} colorStyle={{ color: '#9ca3af', textShadow: '0 0 15px rgba(156,163,175,0.6)' }} />
+                 </div>
+                 
+                 {/* Bottom Row: Red split into two */}
+                 <div className="flex flex-row justify-center items-center w-full lg:w-2/3">
+                   <CarouselColumn 
+                     title="RED" 
+                     logos={red.slice(0, Math.ceil(red.length / 2))} 
+                     colorStyle={{ color: '#ef4444', textShadow: '0 0 15px rgba(239,68,68,0.6)' }} 
+                   />
+                   <CarouselColumn 
+                     title="RED" 
+                     logos={[...red.slice(Math.ceil(red.length / 2))].reverse()} 
+                     colorStyle={{ color: '#ef4444', textShadow: '0 0 15px rgba(239,68,68,0.6)' }} 
+                   />
+                 </div>
                </>
              )}
           </div>
