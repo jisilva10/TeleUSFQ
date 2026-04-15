@@ -163,7 +163,8 @@ export default function App() {
       return () => clearTimeout(timer);
     } 
     else if (displayPhase === 'dragons') {
-      const maxLogos = Math.max(platinum.length, red.length, golden.length, silver.length, 1);
+      const redHalfLen = Math.ceil(red.length / 2);
+      const maxLogos = Math.max(platinum.length, redHalfLen, golden.length, silver.length, 1);
       // Wait for one full cycle (Rolodex executes transition every 2500ms)
       const displayTime = maxLogos * 2500;
 
