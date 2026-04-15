@@ -242,7 +242,7 @@ export default function App() {
 
       {/* PHASE 2: OUR DRAGONS */}
       <div
-        className="absolute inset-0 w-full h-full z-20 flex flex-col items-center justify-center space-y-16 lg:space-y-24 px-8"
+        className="absolute inset-0 w-full h-full z-20 flex flex-col items-center justify-center pt-32 lg:pt-48 px-8"
         style={{
            opacity: displayPhase === 'dragons' ? opacity : 0,
            transition: "opacity 1s ease-in-out",
@@ -257,7 +257,7 @@ export default function App() {
           </div>
 
           {/* Dragons Title - Using solid text styles for TV compatibility (bg-clip-text fails on Tizen) */}
-          <h1 className="text-5xl md:text-7xl lg:text-[6rem] xl:text-[7rem] font-black uppercase z-50 text-center" 
+          <h1 className="text-5xl md:text-7xl lg:text-[6rem] xl:text-[7rem] font-black uppercase z-50 text-center mb-12 lg:mb-20" 
               style={{ color: '#ffffff', letterSpacing: '0.2em', textShadow: '0px 4px 20px rgba(0,0,0,0.8), 0px 0px 30px rgba(250,204,21,0.6)' }}>
             OUR DRAGONS
           </h1>
