@@ -33,8 +33,8 @@ const FALLBACK_IMAGES = [
   "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?q=80&w=1080&auto=format&fit=crop",
 ];
 
-const CarouselColumn = ({ title, logos, colorStyle, scaleClass = "" }: { title: string, logos: string[], colorStyle: React.CSSProperties, scaleClass?: string }) => (
-  <div className={`flex flex-col items-center z-50 flex-1 mx-2 lg:mx-6 transform origin-top ${scaleClass}`}>
+const CarouselColumn = ({ title, logos, colorStyle, scale = 1 }: { title: string, logos: string[], colorStyle: React.CSSProperties, scale?: number }) => (
+  <div className="flex flex-col items-center z-50 flex-1 mx-2 lg:mx-6 transform origin-top" style={{ transform: `scale(${scale})`, WebkitTransform: `scale(${scale})` }}>
     <div className="w-full transition-all duration-1000 shadow-[0_30px_60px_rgba(0,0,0,0.8)] rounded-2xl flex justify-center">
       {logos.length > 0 ? (
         <LogoRolodex items={logos.map((src, i) => (
@@ -48,14 +48,14 @@ const CarouselColumn = ({ title, logos, colorStyle, scaleClass = "" }: { title: 
         ]} />
       )}
     </div>
-    <h2 className="text-xl lg:text-[2rem] font-black tracking-[0.2em] lg:tracking-[0.4em] uppercase mt-6 lg:mt-12 text-center" style={colorStyle}>
+    <h2 className="text-xl lg:text-[2rem] font-black tracking-[0.2em] lg:tracking-[0.4em] uppercase mt-4 lg:mt-6 text-center" style={colorStyle}>
       {title}
     </h2>
   </div>
 );
 
-const DualCarouselColumn = ({ title, logos1, logos2, colorStyle, scaleClass = "" }: { title: string, logos1: string[], logos2: string[], colorStyle: React.CSSProperties, scaleClass?: string }) => (
-  <div className={`flex flex-col items-center z-50 flex-1 mx-2 lg:mx-6 transform origin-top ${scaleClass}`}>
+const DualCarouselColumn = ({ title, logos1, logos2, colorStyle, scale = 1 }: { title: string, logos1: string[], logos2: string[], colorStyle: React.CSSProperties, scale?: number }) => (
+  <div className="flex flex-col items-center z-50 flex-1 mx-2 lg:mx-6 transform origin-top" style={{ transform: `scale(${scale})`, WebkitTransform: `scale(${scale})` }}>
     <div className="flex flex-row space-x-2 md:space-x-6 justify-center items-center w-full">
       <div className="w-auto transition-all duration-1000 shadow-[0_30px_60px_rgba(0,0,0,0.8)] rounded-2xl flex justify-center">
         {logos1.length > 0 ? (
@@ -84,7 +84,7 @@ const DualCarouselColumn = ({ title, logos1, logos2, colorStyle, scaleClass = ""
         )}
       </div>
     </div>
-    <h2 className="text-xl lg:text-[2rem] font-black tracking-[0.2em] lg:tracking-[0.4em] uppercase mt-6 lg:mt-12 text-center" style={colorStyle}>
+    <h2 className="text-xl lg:text-[2rem] font-black tracking-[0.2em] lg:tracking-[0.4em] uppercase mt-4 lg:mt-6 text-center" style={colorStyle}>
       {title}
     </h2>
   </div>
@@ -217,8 +217,8 @@ export default function App() {
   return (
     <div className="relative w-screen h-screen overflow-hidden bg-black font-sans group">
       
-      {/* ALUMNI Logo (Always Fixed on Top Right) */}
-      <div className="absolute top-6 right-8 bg-black/50 backdrop-blur-md py-4 px-10 rounded-2xl shadow-2xl border border-white/10 z-[100] pointer-events-none transition-all">
+      {/* ALUMNI Logo */}
+      <div className={`absolute right-8 transition-all duration-1000 bg-black/50 backdrop-blur-md py-4 px-10 rounded-2xl shadow-2xl border border-white/10 z-[100] pointer-events-none ${displayPhase === 'cards' ? 'top-6' : 'bottom-6'}`}>
         <img src={alumniLogo} alt="Alumni Logo" className="h-12 md:h-16 object-contain drop-shadow-lg" />
       </div>
 
@@ -280,7 +280,7 @@ export default function App() {
                      logos1={red.slice(0, Math.ceil(red.length / 2))} 
                      logos2={[...red.slice(Math.ceil(red.length / 2))].reverse()} 
                      colorStyle={{ color: '#ef4444', textShadow: '0 0 15px rgba(239,68,68,0.6)' }}
-                     scaleClass="scale-[0.65]"
+                     scale={0.65}
                    />
                  </div>
                </>
