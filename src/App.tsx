@@ -54,6 +54,42 @@ const CarouselColumn = ({ title, logos, colorStyle, scaleClass = "" }: { title: 
   </div>
 );
 
+const DualCarouselColumn = ({ title, logos1, logos2, colorStyle, scaleClass = "" }: { title: string, logos1: string[], logos2: string[], colorStyle: React.CSSProperties, scaleClass?: string }) => (
+  <div className={`flex flex-col items-center z-50 flex-1 mx-2 lg:mx-6 transform origin-top ${scaleClass}`}>
+    <div className="flex flex-row space-x-2 md:space-x-6 justify-center items-center w-full">
+      <div className="w-auto transition-all duration-1000 shadow-[0_30px_60px_rgba(0,0,0,0.8)] rounded-2xl flex justify-center">
+        {logos1.length > 0 ? (
+          <LogoRolodex items={logos1.map((src, i) => (
+            <div key={i} className="h-full w-full bg-white flex items-center justify-center relative rounded-xl overflow-hidden shadow-inner">
+              <img src={src} className="w-full h-full object-contain p-6 bg-white" alt={`${title} logo left ${i}`} />
+            </div>
+          ))} />
+        ) : (
+          <LogoRolodex items={[
+            <div key={1} className="h-full w-full bg-neutral-900 grid place-content-center text-xl font-black text-white/40 text-center rounded-xl">PRÓXIMAMENTE</div>,
+          ]} />
+        )}
+      </div>
+      <div className="w-auto transition-all duration-1000 shadow-[0_30px_60px_rgba(0,0,0,0.8)] rounded-2xl flex justify-center">
+        {logos2.length > 0 ? (
+          <LogoRolodex items={logos2.map((src, i) => (
+            <div key={i} className="h-full w-full bg-white flex items-center justify-center relative rounded-xl overflow-hidden shadow-inner">
+              <img src={src} className="w-full h-full object-contain p-6 bg-white" alt={`${title} logo right ${i}`} />
+            </div>
+          ))} />
+        ) : (
+          <LogoRolodex items={[
+            <div key={1} className="h-full w-full bg-neutral-900 grid place-content-center text-xl font-black text-white/40 text-center rounded-xl">PRÓXIMAMENTE</div>,
+          ]} />
+        )}
+      </div>
+    </div>
+    <h2 className="text-xl lg:text-[2rem] font-black tracking-[0.2em] lg:tracking-[0.4em] uppercase mt-6 lg:mt-12 text-center" style={colorStyle}>
+      {title}
+    </h2>
+  </div>
+);
+
 export default function App() {
   const [displayPhase, setDisplayPhase] = useState<'cards' | 'dragons'>('cards');
   const [cardIndex, setCardIndex] = useState(0);
@@ -237,19 +273,14 @@ export default function App() {
                    <CarouselColumn title="SILVER" logos={silver} colorStyle={{ color: '#9ca3af', textShadow: '0 0 15px rgba(156,163,175,0.6)' }} />
                  </div>
                  
-                 {/* Bottom Row: Red split into two, scaled down by 85% */}
-                 <div className="flex flex-row justify-center items-start w-full lg:w-2/3">
-                   <CarouselColumn 
+                 {/* Bottom Row: Red split into two, scaled down by 65%, grouped under one title */}
+                 <div className="flex flex-row justify-center items-start w-full lg:w-3/4">
+                   <DualCarouselColumn 
                      title="RED" 
-                     logos={red.slice(0, Math.ceil(red.length / 2))} 
-                     colorStyle={{ color: '#ef4444', textShadow: '0 0 15px rgba(239,68,68,0.6)' }} 
-                     scaleClass="scale-[0.80]"
-                   />
-                   <CarouselColumn 
-                     title="RED" 
-                     logos={[...red.slice(Math.ceil(red.length / 2))].reverse()} 
+                     logos1={red.slice(0, Math.ceil(red.length / 2))} 
+                     logos2={[...red.slice(Math.ceil(red.length / 2))].reverse()} 
                      colorStyle={{ color: '#ef4444', textShadow: '0 0 15px rgba(239,68,68,0.6)' }}
-                     scaleClass="scale-[0.80]"
+                     scaleClass="scale-[0.65]"
                    />
                  </div>
                </>
