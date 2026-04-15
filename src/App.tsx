@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { LogoRolodex } from './components/ui/animated-logo-rolodex';
 import { fetchDriveImages } from './lib/gdrive';
 import alumniLogo from './assets/logos/ALUMNI_Blanco@3x.png';
+import usfqBg from './assets/artes/usfq.jpg';
 
 // Fallback in case Proxy is unsupported by the TV
 if (typeof motion === 'undefined') {
@@ -32,21 +33,21 @@ const FALLBACK_IMAGES = [
   "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?q=80&w=1080&auto=format&fit=crop",
 ];
 
-const CarouselColumn = ({ title, logos }: { title: string, logos: string[] }) => (
-  <div className="flex flex-col items-center space-y-6 lg:space-y-8 z-50">
-    <h2 className="text-2xl lg:text-3xl font-black tracking-[0.3em] text-neutral-400 uppercase drop-shadow-md">
+const CarouselColumn = ({ title, logos, colorClass }: { title: string, logos: string[], colorClass: string }) => (
+  <div className="flex flex-col items-center space-y-6 lg:space-y-10 z-50">
+    <h2 className={`text-2xl lg:text-[2rem] font-black tracking-[0.4em] uppercase drop-shadow-xl ${colorClass}`}>
       {title}
     </h2>
-    <div className="scale-90 sm:scale-100 lg:scale-[1.1] origin-center transition-all duration-1000 shadow-[0_20px_50px_rgba(0,0,0,0.5)] rounded-xl border border-white/5">
+    <div className="scale-90 sm:scale-100 lg:scale-[1.1] origin-center transition-all duration-1000 shadow-[0_30px_60px_rgba(0,0,0,0.6)] rounded-xl border-2 border-white/10 backdrop-blur-sm">
       {logos.length > 0 ? (
         <LogoRolodex items={logos.map((src, i) => (
-          <div key={i} className="h-full w-full bg-white flex items-center justify-center relative rounded-xl overflow-hidden">
-            <img src={src} className="w-full h-full object-contain p-4 bg-white" alt={`${title} logo ${i}`} />
+          <div key={i} className="h-full w-full bg-white flex items-center justify-center relative rounded-xl overflow-hidden shadow-inner">
+            <img src={src} className="w-full h-full object-contain p-6 bg-white" alt={`${title} logo ${i}`} />
           </div>
         ))} />
       ) : (
         <LogoRolodex items={[
-          <div key={1} className="h-full w-full bg-neutral-900 grid place-content-center text-xl font-black text-neutral-600 text-center rounded-xl">PRÓXIMAMENTE</div>,
+          <div key={1} className="h-full w-full bg-neutral-900 grid place-content-center text-xl font-black text-white/40 text-center rounded-xl">PRÓXIMAMENTE</div>,
         ]} />
       )}
     </div>
@@ -181,8 +182,8 @@ export default function App() {
     <div className="relative w-screen h-screen overflow-hidden bg-black font-sans group">
       
       {/* ALUMNI Logo (Always Fixed on Top Right) */}
-      <div className="absolute top-6 right-8 bg-black/90 backdrop-blur-md py-4 px-10 rounded-2xl shadow-2xl border border-neutral-800 z-[100] pointer-events-none transition-all">
-        <img src={alumniLogo} alt="Alumni Logo" className="h-12 md:h-16 object-contain" />
+      <div className="absolute top-6 right-8 bg-black/50 backdrop-blur-md py-4 px-10 rounded-2xl shadow-2xl border border-white/10 z-[100] pointer-events-none transition-all">
+        <img src={alumniLogo} alt="Alumni Logo" className="h-12 md:h-16 object-contain drop-shadow-lg" />
       </div>
 
       {/* PHASE 1: CARDS */}
@@ -205,7 +206,7 @@ export default function App() {
 
       {/* PHASE 2: OUR DRAGONS */}
       <div
-        className="absolute inset-0 w-full h-full z-20 flex flex-col items-center justify-center space-y-16 bg-neutral-900 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-neutral-800 to-black px-8"
+        className="absolute inset-0 w-full h-full z-20 flex flex-col items-center justify-center space-y-16 lg:space-y-24 px-8"
         style={{
            opacity: displayPhase === 'dragons' ? opacity : 0,
            transition: "opacity 1s ease-in-out",
@@ -213,15 +214,29 @@ export default function App() {
            visibility: (displayPhase === 'dragons' || opacity > 0) ? 'visible' : 'hidden'
         }}
       >
-          <h1 className="text-5xl md:text-7xl lg:text-8xl font-black text-transparent bg-clip-text bg-gradient-to-br from-yellow-100 via-yellow-500 to-yellow-800 tracking-[0.2em] uppercase shadow-yellow-500/50 drop-shadow-2xl z-50">
+          {/* Background USFQ image with dark overlay */}
+          <div className="absolute inset-0 z-0">
+            <img src={usfqBg} className="w-full h-full object-cover opacity-80" alt="usfq background" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/80 to-black/60 backdrop-blur-[2px]"></div>
+          </div>
+
+          {/* Dragons Title */}
+          <h1 className="text-5xl md:text-7xl lg:text-[6rem] xl:text-[7rem] font-black text-transparent bg-clip-text bg-gradient-to-b from-white via-neutral-200 to-neutral-400 tracking-[0.2em] uppercase drop-shadow-[0_0_30px_rgba(255,255,255,0.3)] z-50">
             OUR DRAGONS
           </h1>
           
-          <div className="grid grid-cols-2 gap-y-16 lg:gap-y-0 gap-x-12 md:gap-x-24 lg:flex lg:flex-row lg:justify-center lg:items-center w-full lg:space-x-16 max-w-screen-2xl">
-             <CarouselColumn title="PLATINUM" logos={platinum} />
-             <CarouselColumn title="RED" logos={red} />
-             <CarouselColumn title="GOLDEN" logos={golden} />
-             <CarouselColumn title="SILVER" logos={silver} />
+          {/* We only conditionally render the carousels when displayPhase is dragons 
+              so that the LogoRolodex 'intervalRef' starts perfectly aligned with the transition 
+              and the FIRST sponsor is shown correctly for its full time. */}
+          <div className="grid grid-cols-2 gap-y-16 lg:gap-y-0 gap-x-12 md:gap-x-24 lg:grid-cols-4 w-full max-w-[90rem]">
+             {displayPhase === 'dragons' && (
+               <>
+                 <CarouselColumn title="PLATINUM" logos={platinum} colorClass="text-[#E5E4E2] drop-shadow-[0_0_15px_rgba(229,228,226,0.6)]" />
+                 <CarouselColumn title="RED" logos={red} colorClass="text-[#ef4444] drop-shadow-[0_0_15px_rgba(239,68,68,0.6)]" />
+                 <CarouselColumn title="GOLDEN" logos={golden} colorClass="text-[#fbbf24] drop-shadow-[0_0_15px_rgba(251,191,36,0.6)]" />
+                 <CarouselColumn title="SILVER" logos={silver} colorClass="text-[#9ca3af] drop-shadow-[0_0_15px_rgba(156,163,175,0.6)]" />
+               </>
+             )}
           </div>
       </div>
 
