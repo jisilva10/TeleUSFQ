@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { LogoRolodex } from './components/ui/animated-logo-rolodex';
+import { fetchDriveImages } from './lib/gdrive';
 import alumniLogo from './assets/logos/ALUMNI_Blanco@3x.png';
 
 // Fallback in case Proxy is unsupported by the TV
@@ -27,26 +28,52 @@ const SvgMinimize = () => (
   <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3"/></svg>
 );
 
-const arteUrls = import.meta.glob<{ default: string }>('@/assets/artes/*.{png,jpg,jpeg,webp,svg}', { eager: true });
-const MAPPED_ARTES = Object.values(arteUrls).map(mod => mod.default);
-
-const logoUrls = import.meta.glob<{ default: string }>('@/assets/logos/*.{png,jpg,jpeg,webp,svg}', { eager: true });
-const MAPPED_LOGOS = Object.values(logoUrls).map(mod => mod.default);
-
 const FALLBACK_IMAGES = [
   "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?q=80&w=1080&auto=format&fit=crop",
   "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?q=80&w=1080&auto=format&fit=crop",
   "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=1080&auto=format&fit=crop"
 ];
 
-const IMAGES = MAPPED_ARTES.length > 0 ? MAPPED_ARTES : FALLBACK_IMAGES;
-
 export default function App() {
   const [imageIndex, setImageIndex] = useState(0);
   const [opacity, setOpacity] = useState(1);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [mappedArtes, setMappedArtes] = useState<string[]>([]);
+  const [mappedLogos, setMappedLogos] = useState<string[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    async function loadImages() {
+      // Fetch URLs from Drive API
+      const artes = await fetchDriveImages('1GaYLdPvpyeMTAVjMhoEsy3q8aqOxoD4b');
+      const logos = await fetchDriveImages('1F0QxbtaqnwVpQokuXfoGHG8xsQ2MEAc');
+      
+      setMappedArtes(artes);
+      setMappedLogos(logos);
+
+      // Preload all images so there are no delays during rendering and carousel transitions
+      const allImagesToPreload = [...artes, ...logos];
+      await Promise.all(
+        allImagesToPreload.map((src) => {
+          return new Promise((resolve) => {
+            const img = new Image();
+            img.src = src;
+            img.onload = resolve;
+            img.onerror = resolve; // Ignore individual failures to not block forever
+          });
+        })
+      );
+
+      setIsLoading(false);
+    }
+    loadImages();
+  }, []);
+
+  const IMAGES = mappedArtes.length > 0 ? mappedArtes : FALLBACK_IMAGES;
+
+  useEffect(() => {
+    if (isLoading) return; // Do not start the interval until loaded
+
     const interval = setInterval(() => {
       // 1. Empezamos a desvanecer la imagen a negro
       setOpacity(0);
@@ -59,7 +86,7 @@ export default function App() {
       }, 1000);
     }, 10000); // 10 seconds
     return () => clearInterval(interval);
-  }, []);
+  }, [IMAGES.length, isLoading]);
 
   useEffect(() => {
     const handleFullscreenChange = () => {
@@ -80,6 +107,19 @@ export default function App() {
       }
     }
   };
+
+  if (isLoading) {
+    return (
+      <div className="w-screen h-screen bg-black flex flex-col items-center justify-center font-sans">
+        <div className="animate-pulse text-white/50 text-2xl font-black tracking-widest">
+          CARGANDO SISTEMA
+        </div>
+        <div className="text-white/20 text-sm mt-4 tracking-widest font-light">
+          PRE-DESCARGANDO CONTENIDOS
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="relative w-screen h-screen overflow-hidden bg-black font-sans group">
@@ -104,16 +144,15 @@ export default function App() {
         <div className="w-full flex justify-between items-start pointer-events-auto">
           {/* Top Left Carousel */}
           <div className="scale-75 origin-top-left transition-all duration-1000 shadow-2xl rounded-xl">
-            {MAPPED_LOGOS.length > 0 ? (
-              <LogoRolodex items={MAPPED_LOGOS.map((src, i) => (
+            {mappedLogos.length > 0 ? (
+              <LogoRolodex items={mappedLogos.map((src, i) => (
                 <div key={i} className="h-full w-full bg-white flex items-center justify-center relative">
                   <img src={src} className="w-full h-full object-contain p-4 bg-white" alt="logo" />
                 </div>
               ))} />
             ) : (
               <LogoRolodex items={[
-                <div key={1} className="h-full w-full bg-white grid place-content-center text-3xl font-black text-black text-center">AGREGA<br/>LOGOS</div>,
-                <div key={2} className="h-full w-full bg-gray-200 grid place-content-center text-3xl font-black text-black text-center">A LA<br/>CARPETA</div>
+                <div key={1} className="h-full w-full bg-black grid place-content-center text-3xl font-black text-white text-center">NO LOGOS</div>,
               ]} />
             )}
           </div>
