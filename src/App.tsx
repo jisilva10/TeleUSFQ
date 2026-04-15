@@ -33,12 +33,12 @@ const FALLBACK_IMAGES = [
   "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?q=80&w=1080&auto=format&fit=crop",
 ];
 
-const CarouselColumn = ({ title, logos, colorClass }: { title: string, logos: string[], colorClass: string }) => (
-  <div className="flex flex-col items-center space-y-6 lg:space-y-10 z-50">
-    <h2 className={`text-2xl lg:text-[2rem] font-black tracking-[0.4em] uppercase drop-shadow-xl ${colorClass}`}>
+const CarouselColumn = ({ title, logos, colorStyle }: { title: string, logos: string[], colorStyle: React.CSSProperties }) => (
+  <div className="flex flex-col items-center z-50 flex-1 mx-2 lg:mx-6">
+    <h2 className="text-xl lg:text-[2rem] font-black tracking-[0.2em] lg:tracking-[0.4em] uppercase mb-6 lg:mb-10 text-center" style={colorStyle}>
       {title}
     </h2>
-    <div className="scale-90 sm:scale-100 lg:scale-[1.1] origin-center transition-all duration-1000 shadow-[0_30px_60px_rgba(0,0,0,0.8)] rounded-2xl">
+    <div className="w-full origin-center transition-all duration-1000 shadow-[0_30px_60px_rgba(0,0,0,0.8)] rounded-2xl flex justify-center">
       {logos.length > 0 ? (
         <LogoRolodex items={logos.map((src, i) => (
           <div key={i} className="h-full w-full bg-white flex items-center justify-center relative rounded-xl overflow-hidden shadow-inner">
@@ -220,21 +220,20 @@ export default function App() {
             <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/80 to-black/60 backdrop-blur-[2px]"></div>
           </div>
 
-          {/* Dragons Title */}
-          <h1 className="text-5xl md:text-7xl lg:text-[6rem] xl:text-[7rem] font-black text-transparent bg-clip-text bg-gradient-to-b from-white via-neutral-200 to-neutral-400 tracking-[0.2em] uppercase drop-shadow-[0_0_30px_rgba(255,255,255,0.3)] z-50">
+          {/* Dragons Title - Using solid text styles for TV compatibility (bg-clip-text fails on Tizen) */}
+          <h1 className="text-5xl md:text-7xl lg:text-[6rem] xl:text-[7rem] font-black uppercase z-50 text-center" 
+              style={{ color: '#ffffff', letterSpacing: '0.2em', textShadow: '0px 4px 20px rgba(0,0,0,0.8), 0px 0px 30px rgba(250,204,21,0.6)' }}>
             OUR DRAGONS
           </h1>
           
-          {/* We only conditionally render the carousels when displayPhase is dragons 
-              so that the LogoRolodex 'intervalRef' starts perfectly aligned with the transition 
-              and the FIRST sponsor is shown correctly for its full time. */}
-          <div className="grid grid-cols-2 gap-y-16 lg:gap-y-0 gap-x-12 md:gap-x-24 lg:grid-cols-4 w-full max-w-[90rem]">
+          {/* We use Flexbox instead of Grid because legacy smart TVs do not support CSS Grid well */}
+          <div className="flex flex-row justify-center items-center w-full max-w-[100rem]">
              {displayPhase === 'dragons' && (
                <>
-                 <CarouselColumn title="PLATINUM" logos={platinum} colorClass="text-[#E5E4E2] drop-shadow-[0_0_15px_rgba(229,228,226,0.6)]" />
-                 <CarouselColumn title="RED" logos={red} colorClass="text-[#ef4444] drop-shadow-[0_0_15px_rgba(239,68,68,0.6)]" />
-                 <CarouselColumn title="GOLDEN" logos={golden} colorClass="text-[#fbbf24] drop-shadow-[0_0_15px_rgba(251,191,36,0.6)]" />
-                 <CarouselColumn title="SILVER" logos={silver} colorClass="text-[#9ca3af] drop-shadow-[0_0_15px_rgba(156,163,175,0.6)]" />
+                 <CarouselColumn title="PLATINUM" logos={platinum} colorStyle={{ color: '#E5E4E2', textShadow: '0 0 15px rgba(229,228,226,0.6)' }} />
+                 <CarouselColumn title="RED" logos={red} colorStyle={{ color: '#ef4444', textShadow: '0 0 15px rgba(239,68,68,0.6)' }} />
+                 <CarouselColumn title="GOLDEN" logos={golden} colorStyle={{ color: '#fbbf24', textShadow: '0 0 15px rgba(251,191,36,0.6)' }} />
+                 <CarouselColumn title="SILVER" logos={silver} colorStyle={{ color: '#9ca3af', textShadow: '0 0 15px rgba(156,163,175,0.6)' }} />
                </>
              )}
           </div>
