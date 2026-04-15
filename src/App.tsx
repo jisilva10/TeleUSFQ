@@ -30,29 +30,61 @@ const SvgMinimize = () => (
 
 const FALLBACK_IMAGES = [
   "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?q=80&w=1080&auto=format&fit=crop",
-  "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?q=80&w=1080&auto=format&fit=crop",
-  "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=1080&auto=format&fit=crop"
 ];
 
+const CarouselColumn = ({ title, logos }: { title: string, logos: string[] }) => (
+  <div className="flex flex-col items-center space-y-6 lg:space-y-8 z-50">
+    <h2 className="text-2xl lg:text-3xl font-black tracking-[0.3em] text-neutral-400 uppercase drop-shadow-md">
+      {title}
+    </h2>
+    <div className="scale-90 sm:scale-100 lg:scale-[1.1] origin-center transition-all duration-1000 shadow-[0_20px_50px_rgba(0,0,0,0.5)] rounded-xl border border-white/5">
+      {logos.length > 0 ? (
+        <LogoRolodex items={logos.map((src, i) => (
+          <div key={i} className="h-full w-full bg-white flex items-center justify-center relative rounded-xl overflow-hidden">
+            <img src={src} className="w-full h-full object-contain p-4 bg-white" alt={`${title} logo ${i}`} />
+          </div>
+        ))} />
+      ) : (
+        <LogoRolodex items={[
+          <div key={1} className="h-full w-full bg-neutral-900 grid place-content-center text-xl font-black text-neutral-600 text-center rounded-xl">PRÓXIMAMENTE</div>,
+        ]} />
+      )}
+    </div>
+  </div>
+);
+
 export default function App() {
-  const [imageIndex, setImageIndex] = useState(0);
+  const [displayPhase, setDisplayPhase] = useState<'cards' | 'dragons'>('cards');
+  const [cardIndex, setCardIndex] = useState(0);
   const [opacity, setOpacity] = useState(1);
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const [mappedArtes, setMappedArtes] = useState<string[]>([]);
-  const [mappedLogos, setMappedLogos] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+
+  // States
+  const [mappedArtes, setMappedArtes] = useState<string[]>([]);
+  const [platinum, setPlatinum] = useState<string[]>([]);
+  const [red, setRed] = useState<string[]>([]);
+  const [golden, setGolden] = useState<string[]>([]);
+  const [silver, setSilver] = useState<string[]>([]);
 
   useEffect(() => {
     async function loadImages() {
-      // Fetch URLs from Drive API
-      const artes = await fetchDriveImages('1GaYLdPvpyeMTAVjMhoEsy3q8aqOxoD4b');
-      const logos = await fetchDriveImages('1-F0QxbtaqnwVpQokuXfoGHG8xsQ2MEAc');
+      const [artesRaw, platRaw, redRaw, goldRaw, silvRaw] = await Promise.all([
+        fetchDriveImages('1GaYLdPvpyeMTAVjMhoEsy3q8aqOxoD4b'),
+        fetchDriveImages('11I02dhti7MEmG5MOUo24nvjr-5iDEi4I'),
+        fetchDriveImages('1XvYlQAwfophzuaK2suzvsJpPy-3knFu8'),
+        fetchDriveImages('14hnNDGvQYt4uoCMiC7f4MY8icdkYEnDY'),
+        fetchDriveImages('1CSqFvsCF9tz-m5J1hxTYD_8jJadQ-6wX'),
+      ]);
       
-      setMappedArtes(artes);
-      setMappedLogos(logos);
+      setMappedArtes(artesRaw);
+      setPlatinum(platRaw);
+      setRed(redRaw);
+      setGolden(goldRaw);
+      setSilver(silvRaw);
 
       // Preload all images so there are no delays during rendering and carousel transitions
-      const allImagesToPreload = [...artes, ...logos];
+      const allImagesToPreload = [...artesRaw, ...platRaw, ...redRaw, ...goldRaw, ...silvRaw];
       await Promise.all(
         allImagesToPreload.map((src) => {
           return new Promise((resolve) => {
@@ -72,21 +104,45 @@ export default function App() {
   const IMAGES = mappedArtes.length > 0 ? mappedArtes : FALLBACK_IMAGES;
 
   useEffect(() => {
-    if (isLoading) return; // Do not start the interval until loaded
+    if (isLoading) return;
 
-    const interval = setInterval(() => {
-      // 1. Empezamos a desvanecer la imagen a negro
-      setOpacity(0);
-      
-      // 2. Esperamos a que termine el fade (1 segundo), cambiamos la imagen
-      // y la volvemos a aparecer
-      setTimeout(() => {
-        setImageIndex((prev) => (prev + 1) % IMAGES.length);
-        setOpacity(1);
-      }, 1000);
-    }, 10000); // 10 seconds
-    return () => clearInterval(interval);
-  }, [IMAGES.length, isLoading]);
+    if (displayPhase === 'cards') {
+      const timer = setTimeout(() => {
+        // Fade out
+        setOpacity(0);
+        setTimeout(() => {
+          const nextIndex = cardIndex + 1;
+          if (nextIndex >= IMAGES.length) {
+            setCardIndex(0);
+            setDisplayPhase('dragons');
+          } else {
+            setCardIndex(nextIndex);
+          }
+          // Fade in
+          setOpacity(1);
+        }, 1000);
+      }, 10000);
+
+      return () => clearTimeout(timer);
+    } 
+    else if (displayPhase === 'dragons') {
+      const maxLogos = Math.max(platinum.length, red.length, golden.length, silver.length, 1);
+      // Wait for one full cycle (Rolodex executes transition every 2500ms)
+      const displayTime = maxLogos * 2500;
+
+      const timer = setTimeout(() => {
+        // Fade out
+        setOpacity(0);
+        setTimeout(() => {
+          setDisplayPhase('cards');
+          // Fade in
+          setOpacity(1);
+        }, 1000);
+      }, displayTime);
+
+      return () => clearTimeout(timer);
+    }
+  }, [cardIndex, displayPhase, isLoading, IMAGES.length, platinum.length, red.length, golden.length, silver.length]);
 
   useEffect(() => {
     const handleFullscreenChange = () => {
@@ -110,7 +166,7 @@ export default function App() {
 
   if (isLoading) {
     return (
-      <div className="w-screen h-screen bg-black flex flex-col items-center justify-center font-sans">
+      <div className="w-screen h-screen bg-black flex flex-col items-center justify-center font-sans relative z-50">
         <div className="animate-pulse text-white/50 text-2xl font-black tracking-widest">
           CARGANDO SISTEMA
         </div>
@@ -123,62 +179,60 @@ export default function App() {
 
   return (
     <div className="relative w-screen h-screen overflow-hidden bg-black font-sans group">
-      {/* Background Image Slider - Pure CSS para evitar bloqueos del JS thread en TV */}
-      <img
-        key="single-image-renderer"
-        src={IMAGES[imageIndex]}
-        style={{ 
-          opacity, 
-          transition: "opacity 1s ease-in-out",
-          willChange: "opacity" 
-        }}
-        className="absolute inset-0 w-full h-full object-cover z-0"
-        alt="background"
-      />
-
-      {/* Visual Texture removed to keep background at full color */}
-
-      {/* Main Overlay Plane */}
-      <div className="relative z-20 w-full h-full flex flex-col justify-between p-12">
-        {/* Top Header and Carousel */}
-        <div className="w-full flex justify-between items-start pointer-events-auto">
-          {/* Top Left Carousel */}
-          <div className="scale-75 origin-top-left transition-all duration-1000 shadow-2xl rounded-xl">
-            {mappedLogos.length > 0 ? (
-              <LogoRolodex items={mappedLogos.map((src, i) => (
-                <div key={i} className="h-full w-full bg-white flex items-center justify-center relative">
-                  <img src={src} className="w-full h-full object-contain p-4 bg-white" alt="logo" />
-                </div>
-              ))} />
-            ) : (
-              <LogoRolodex items={[
-                <div key={1} className="h-full w-full bg-black grid place-content-center text-3xl font-black text-white text-center">NO LOGOS</div>,
-              ]} />
-            )}
-          </div>
-          
-          {/* Top Right USFQ Logo */}
-          <div className="absolute top-6 right-8 bg-black py-4 px-10 rounded-2xl shadow-2xl border border-neutral-800">
-            <img src={alumniLogo} alt="Alumni Logo" className="h-16 object-contain" />
-          </div>
-        </div>
-
-        <div className="flex-1 w-full">
-          {/* Center Content Empty (Letting Background Image Show) */}
-        </div>
-
-        {/* Footer Area Area is now empty as requested */}
-        <div className="w-full h-10"></div>
-
-        {/* Fullscreen Toggle Button */}
-        <button
-          onClick={toggleFullscreen}
-          className="absolute bottom-6 right-6 z-50 p-4 bg-black/40 hover:bg-black/80 rounded-full text-white/30 hover:text-white transition-all duration-500 backdrop-blur-md opacity-20 hover:opacity-100 focus:opacity-100 group-hover:opacity-100 cursor-pointer shadow-xl border border-white/5 hover:border-white/20 hover:scale-110 active:scale-95"
-          title={isFullscreen ? "Exit Fullscreen" : "Enter Fullscreen"}
-        >
-          {isFullscreen ? <SvgMinimize /> : <SvgMaximize />}
-        </button>
+      
+      {/* ALUMNI Logo (Always Fixed on Top Right) */}
+      <div className="absolute top-6 right-8 bg-black/90 backdrop-blur-md py-4 px-10 rounded-2xl shadow-2xl border border-neutral-800 z-[100] pointer-events-none transition-all">
+        <img src={alumniLogo} alt="Alumni Logo" className="h-12 md:h-16 object-contain" />
       </div>
+
+      {/* PHASE 1: CARDS */}
+      <div 
+        className="absolute inset-0 w-full h-full z-10"
+        style={{
+           opacity: displayPhase === 'cards' ? opacity : 0,
+           transition: "opacity 1s ease-in-out",
+           visibility: (displayPhase === 'cards' || opacity > 0) ? 'visible' : 'hidden'
+        }}
+      >
+        <img
+          key="single-image-renderer"
+          src={IMAGES[cardIndex]}
+          style={{ willChange: "opacity" }}
+          className="absolute inset-0 w-full h-full object-cover z-0"
+          alt="background"
+        />
+      </div>
+
+      {/* PHASE 2: OUR DRAGONS */}
+      <div
+        className="absolute inset-0 w-full h-full z-20 flex flex-col items-center justify-center space-y-16 bg-neutral-900 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-neutral-800 to-black px-8"
+        style={{
+           opacity: displayPhase === 'dragons' ? opacity : 0,
+           transition: "opacity 1s ease-in-out",
+           pointerEvents: displayPhase === 'dragons' ? 'auto' : 'none',
+           visibility: (displayPhase === 'dragons' || opacity > 0) ? 'visible' : 'hidden'
+        }}
+      >
+          <h1 className="text-5xl md:text-7xl lg:text-8xl font-black text-transparent bg-clip-text bg-gradient-to-br from-yellow-100 via-yellow-500 to-yellow-800 tracking-[0.2em] uppercase shadow-yellow-500/50 drop-shadow-2xl z-50">
+            OUR DRAGONS
+          </h1>
+          
+          <div className="grid grid-cols-2 gap-y-16 lg:gap-y-0 gap-x-12 md:gap-x-24 lg:flex lg:flex-row lg:justify-center lg:items-center w-full lg:space-x-16 max-w-screen-2xl">
+             <CarouselColumn title="PLATINUM" logos={platinum} />
+             <CarouselColumn title="RED" logos={red} />
+             <CarouselColumn title="GOLDEN" logos={golden} />
+             <CarouselColumn title="SILVER" logos={silver} />
+          </div>
+      </div>
+
+      {/* Fullscreen Toggle Button */}
+      <button
+        onClick={toggleFullscreen}
+        className="absolute bottom-6 right-6 z-[100] p-4 bg-black/40 hover:bg-black/80 rounded-full text-white/30 hover:text-white transition-all duration-500 backdrop-blur-md opacity-20 hover:opacity-100 focus:opacity-100 group-hover:opacity-100 cursor-pointer shadow-xl border border-white/5 hover:border-white/20 hover:scale-110 active:scale-95"
+        title={isFullscreen ? "Exit Fullscreen" : "Enter Fullscreen"}
+      >
+        {isFullscreen ? <SvgMinimize /> : <SvgMaximize />}
+      </button>
     </div>
   );
 }
