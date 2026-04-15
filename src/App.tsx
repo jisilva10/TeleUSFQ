@@ -263,7 +263,7 @@ export default function App() {
           </h1>
           
           {/* We use Flexbox instead of Grid because legacy smart TVs do not support CSS Grid well */}
-          <div className="flex flex-col items-center w-full max-w-[100rem] space-y-16 lg:space-y-16">
+          <div className="flex flex-col items-center w-full max-w-[100rem] space-y-16 lg:space-y-24">
              {displayPhase === 'dragons' && (
                <>
                  {/* Top Row: Platinum, Golden, Silver */}
@@ -273,14 +273,14 @@ export default function App() {
                    <CarouselColumn title="SILVER" logos={silver} colorStyle={{ color: '#9ca3af', textShadow: '0 0 15px rgba(156,163,175,0.6)' }} />
                  </div>
                  
-                 {/* Bottom Row: Red split into two, scaled down by 65%, grouped under one title */}
+                 {/* Bottom Row: Red split into two, scaled down and grouped under one title */}
                  <div className="flex flex-row justify-center items-start w-full lg:w-3/4">
                    <DualCarouselColumn 
                      title="RED" 
                      logos1={red.slice(0, Math.ceil(red.length / 2))} 
                      logos2={[...red.slice(Math.ceil(red.length / 2))].reverse()} 
                      colorStyle={{ color: '#ef4444', textShadow: '0 0 15px rgba(239,68,68,0.6)' }}
-                     scale={0.65}
+                     scale={0.75}
                    />
                  </div>
                </>
