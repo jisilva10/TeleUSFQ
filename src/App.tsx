@@ -84,7 +84,7 @@ const DualCarouselColumn = ({ title, logos1, logos2, colorStyle, scale = 1 }: { 
         )}
       </div>
     </div>
-    <h2 className="text-xl lg:text-[2rem] font-black tracking-[0.2em] lg:tracking-[0.4em] uppercase mt-4 lg:mt-6 text-center" style={colorStyle}>
+    <h2 className="text-2xl md:text-3xl lg:text-[2.66rem] font-black tracking-[0.2em] lg:tracking-[0.4em] uppercase mt-6 lg:mt-8 text-center" style={colorStyle}>
       {title}
     </h2>
   </div>
