@@ -215,9 +215,9 @@ export default function App() {
         }}
       >
           {/* Background USFQ image with dark overlay */}
-          <div className="absolute inset-0 z-0">
-            <img src={usfqBg} className="w-full h-full object-cover opacity-80" alt="usfq background" />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/80 to-black/60 backdrop-blur-[2px]"></div>
+          <div className="absolute inset-0 z-0 bg-black">
+            <img src={usfqBg} className="w-full h-full object-cover opacity-50" alt="usfq background" />
+            <div className="absolute inset-0 bg-black/60 backdrop-blur-md"></div>
           </div>
 
           {/* Dragons Title - Using solid text styles for TV compatibility (bg-clip-text fails on Tizen) */}
