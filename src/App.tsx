@@ -33,9 +33,9 @@ const FALLBACK_IMAGES = [
   "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?q=80&w=1080&auto=format&fit=crop",
 ];
 
-const CarouselColumn = ({ title, logos, colorStyle }: { title: string, logos: string[], colorStyle: React.CSSProperties }) => (
-  <div className="flex flex-col items-center z-50 flex-1 mx-2 lg:mx-6">
-    <div className="w-full origin-center transition-all duration-1000 shadow-[0_30px_60px_rgba(0,0,0,0.8)] rounded-2xl flex justify-center">
+const CarouselColumn = ({ title, logos, colorStyle, scaleClass = "" }: { title: string, logos: string[], colorStyle: React.CSSProperties, scaleClass?: string }) => (
+  <div className={`flex flex-col items-center z-50 flex-1 mx-2 lg:mx-6 transform origin-top ${scaleClass}`}>
+    <div className="w-full transition-all duration-1000 shadow-[0_30px_60px_rgba(0,0,0,0.8)] rounded-2xl flex justify-center">
       {logos.length > 0 ? (
         <LogoRolodex items={logos.map((src, i) => (
           <div key={i} className="h-full w-full bg-white flex items-center justify-center relative rounded-xl overflow-hidden shadow-inner">
@@ -227,27 +227,29 @@ export default function App() {
           </h1>
           
           {/* We use Flexbox instead of Grid because legacy smart TVs do not support CSS Grid well */}
-          <div className="flex flex-col items-center w-full max-w-[100rem] space-y-16 lg:space-y-24">
+          <div className="flex flex-col items-center w-full max-w-[100rem] space-y-16 lg:space-y-16">
              {displayPhase === 'dragons' && (
                <>
                  {/* Top Row: Platinum, Golden, Silver */}
-                 <div className="flex flex-row justify-center items-center w-full">
+                 <div className="flex flex-row justify-center items-end w-full">
                    <CarouselColumn title="PLATINUM" logos={platinum} colorStyle={{ color: '#E5E4E2', textShadow: '0 0 15px rgba(229,228,226,0.6)' }} />
                    <CarouselColumn title="GOLDEN" logos={golden} colorStyle={{ color: '#fbbf24', textShadow: '0 0 15px rgba(251,191,36,0.6)' }} />
                    <CarouselColumn title="SILVER" logos={silver} colorStyle={{ color: '#9ca3af', textShadow: '0 0 15px rgba(156,163,175,0.6)' }} />
                  </div>
                  
-                 {/* Bottom Row: Red split into two */}
-                 <div className="flex flex-row justify-center items-center w-full lg:w-2/3">
+                 {/* Bottom Row: Red split into two, scaled down by 85% */}
+                 <div className="flex flex-row justify-center items-start w-full lg:w-2/3">
                    <CarouselColumn 
                      title="RED" 
                      logos={red.slice(0, Math.ceil(red.length / 2))} 
                      colorStyle={{ color: '#ef4444', textShadow: '0 0 15px rgba(239,68,68,0.6)' }} 
+                     scaleClass="scale-[0.80]"
                    />
                    <CarouselColumn 
                      title="RED" 
                      logos={[...red.slice(Math.ceil(red.length / 2))].reverse()} 
-                     colorStyle={{ color: '#ef4444', textShadow: '0 0 15px rgba(239,68,68,0.6)' }} 
+                     colorStyle={{ color: '#ef4444', textShadow: '0 0 15px rgba(239,68,68,0.6)' }}
+                     scaleClass="scale-[0.80]"
                    />
                  </div>
                </>
