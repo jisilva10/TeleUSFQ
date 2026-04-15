@@ -38,7 +38,7 @@ const CarouselColumn = ({ title, logos, colorClass }: { title: string, logos: st
     <h2 className={`text-2xl lg:text-[2rem] font-black tracking-[0.4em] uppercase drop-shadow-xl ${colorClass}`}>
       {title}
     </h2>
-    <div className="scale-90 sm:scale-100 lg:scale-[1.1] origin-center transition-all duration-1000 shadow-[0_30px_60px_rgba(0,0,0,0.6)] rounded-xl border-2 border-white/10 backdrop-blur-sm">
+    <div className="scale-90 sm:scale-100 lg:scale-[1.1] origin-center transition-all duration-1000 shadow-[0_30px_60px_rgba(0,0,0,0.8)] rounded-2xl">
       {logos.length > 0 ? (
         <LogoRolodex items={logos.map((src, i) => (
           <div key={i} className="h-full w-full bg-white flex items-center justify-center relative rounded-xl overflow-hidden shadow-inner">

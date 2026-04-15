@@ -35,7 +35,7 @@ export const LogoRolodex = ({ items }: { items: React.ReactNode[] }) => {
         transform: "rotateY(-20deg)",
         transformStyle: "preserve-3d",
       }}
-      className="relative z-0 h-44 w-60 shrink-0 rounded-xl overflow-hidden shadow-xl bg-white border-2 border-white/20"
+      className="relative z-0 h-44 w-60 shrink-0 rounded-2xl overflow-hidden shadow-2xl bg-white border-[8px] border-white"
     >
       <AnimatePresence mode="sync">
         <MotionDiv
