@@ -56,8 +56,8 @@ const CarouselColumn = ({ title, logos, colorStyle, scale = 1 }: { title: string
 
 const DualCarouselColumn = ({ title, logos1, logos2, colorStyle, scale = 1 }: { title: string, logos1: string[], logos2: string[], colorStyle: React.CSSProperties, scale?: number }) => (
   <div className="flex flex-col items-center z-50 flex-1 mx-2 lg:mx-6 transform origin-top" style={{ transform: `scale(${scale})`, WebkitTransform: `scale(${scale})` }}>
-    <div className="flex flex-row space-x-2 md:space-x-6 justify-center items-center w-full">
-      <div className="w-auto transition-all duration-1000 shadow-[0_30px_60px_rgba(0,0,0,0.8)] rounded-2xl flex justify-center">
+    <div className="flex flex-row justify-center items-center w-full">
+      <div className="w-auto transition-all duration-1000 shadow-[0_30px_60px_rgba(0,0,0,0.8)] rounded-2xl flex justify-center mr-4 lg:mr-10">
         {logos1.length > 0 ? (
           <LogoRolodex items={logos1.map((src, i) => (
             <div key={i} className="h-full w-full bg-white flex items-center justify-center relative rounded-xl overflow-hidden shadow-inner">
@@ -263,11 +263,11 @@ export default function App() {
           </h1>
           
           {/* We use Flexbox instead of Grid because legacy smart TVs do not support CSS Grid well */}
-          <div className="flex flex-col items-center w-full max-w-[100rem] space-y-16 lg:space-y-24">
+          <div className="flex flex-col items-center w-full max-w-[100rem]">
              {displayPhase === 'dragons' && (
                <>
                  {/* Top Row: Platinum, Golden, Silver */}
-                 <div className="flex flex-row justify-center items-end w-full">
+                 <div className="flex flex-row justify-center items-end w-full mb-20 lg:mb-32">
                    <CarouselColumn title="PLATINUM" logos={platinum} colorStyle={{ color: '#E5E4E2', textShadow: '0 0 15px rgba(229,228,226,0.6)' }} />
                    <CarouselColumn title="GOLDEN" logos={golden} colorStyle={{ color: '#fbbf24', textShadow: '0 0 15px rgba(251,191,36,0.6)' }} />
                    <CarouselColumn title="SILVER" logos={silver} colorStyle={{ color: '#9ca3af', textShadow: '0 0 15px rgba(156,163,175,0.6)' }} />
