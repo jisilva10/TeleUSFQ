@@ -46,7 +46,7 @@ export default function App() {
     async function loadImages() {
       // Fetch URLs from Drive API
       const artes = await fetchDriveImages('1GaYLdPvpyeMTAVjMhoEsy3q8aqOxoD4b');
-      const logos = await fetchDriveImages('1F0QxbtaqnwVpQokuXfoGHG8xsQ2MEAc');
+      const logos = await fetchDriveImages('1-F0QxbtaqnwVpQokuXfoGHG8xsQ2MEAc');
       
       setMappedArtes(artes);
       setMappedLogos(logos);
