@@ -234,8 +234,8 @@ export default function App() {
       >
         {/* Background for cards with non-16:9 aspect ratio */}
         <div className="absolute inset-0 z-0 bg-black">
-          <img src={usfqBg} className="w-full h-full object-cover opacity-50" alt="usfq background" />
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-md"></div>
+          <img src={usfqBg} className="w-full h-full object-cover" alt="usfq background" />
+          <div className="absolute inset-0 backdrop-blur-lg"></div>
         </div>
 
         <img
