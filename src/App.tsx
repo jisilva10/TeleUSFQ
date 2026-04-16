@@ -232,11 +232,17 @@ export default function App() {
            visibility: (displayPhase === 'cards' || opacity > 0) ? 'visible' : 'hidden'
         }}
       >
+        {/* Background for cards with non-16:9 aspect ratio */}
+        <div className="absolute inset-0 z-0 bg-black">
+          <img src={usfqBg} className="w-full h-full object-cover opacity-50" alt="usfq background" />
+          <div className="absolute inset-0 bg-black/80 backdrop-blur-2xl"></div>
+        </div>
+
         <img
           key="single-image-renderer"
           src={IMAGES[cardIndex]}
           style={{ willChange: "opacity" }}
-          className="absolute inset-0 w-full h-full object-cover z-0"
+          className="absolute inset-0 w-full h-full object-contain z-10 shadow-2xl"
           alt="background"
         />
       </div>
