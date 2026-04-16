@@ -260,7 +260,7 @@ export default function App() {
           {/* Dragons Title - Using solid text styles for TV compatibility (bg-clip-text fails on Tizen) */}
           <h1 className="text-5xl md:text-7xl lg:text-[6rem] xl:text-[7rem] font-black uppercase z-50 text-center mb-12 lg:mb-20" 
               style={{ color: '#ffffff', letterSpacing: '0.2em', textShadow: '0px 4px 20px rgba(0,0,0,0.8), 0px 0px 30px rgba(250,204,21,0.6)' }}>
-            OUR DRAGONS
+            RED DE BENEFICIOS
           </h1>
           
           {/* We use Flexbox instead of Grid because legacy smart TVs do not support CSS Grid well */}
