@@ -103,6 +103,7 @@ export default function App() {
   const [red, setRed] = useState<string[]>([]);
   const [golden, setGolden] = useState<string[]>([]);
   const [silver, setSilver] = useState<string[]>([]);
+  const [isVertical, setIsVertical] = useState(false);
 
   useEffect(() => {
     async function loadImages() {
@@ -233,15 +234,24 @@ export default function App() {
         }}
       >
         {/* Background for cards with non-16:9 aspect ratio */}
-        <div className="absolute inset-0 z-0 bg-black">
+        <div 
+          className="absolute inset-0 z-0 bg-black transition-opacity duration-1000"
+          style={{ opacity: isVertical ? 1 : 0 }}
+        >
           <img src={usfqBg} className="w-full h-full object-cover" alt="usfq background" />
         </div>
 
         <img
-          key="single-image-renderer"
+          key={IMAGES[cardIndex]}
           src={IMAGES[cardIndex]}
+          onLoad={(e) => {
+            const img = e.currentTarget;
+            const ratio = img.naturalWidth / img.naturalHeight;
+            // Threshold: If ratio is less than 1.1 (vertical or square), use contain + background
+            setIsVertical(ratio < 1.1);
+          }}
           style={{ willChange: "opacity" }}
-          className="absolute inset-0 w-full h-full object-contain z-10 shadow-2xl"
+          className={`absolute inset-0 w-full h-full z-10 shadow-2xl transition-all duration-700 ${isVertical ? 'object-contain' : 'object-cover'}`}
           alt="background"
         />
       </div>
