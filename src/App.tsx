@@ -103,7 +103,7 @@ export default function App() {
   const [red, setRed] = useState<string[]>([]);
   const [golden, setGolden] = useState<string[]>([]);
   const [silver, setSilver] = useState<string[]>([]);
-  const [isVertical, setIsVertical] = useState(false);
+  const [imageRatios, setImageRatios] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     async function loadImages() {
@@ -122,18 +122,25 @@ export default function App() {
       setSilver(silvRaw);
 
       // Preload all images so there are no delays during rendering and carousel transitions
+      const ratios: Record<string, boolean> = {};
       const allImagesToPreload = [...artesRaw, ...platRaw, ...redRaw, ...goldRaw, ...silvRaw];
       await Promise.all(
         allImagesToPreload.map((src) => {
           return new Promise((resolve) => {
             const img = new Image();
+            img.onload = () => {
+              if (img.naturalHeight > 0) {
+                ratios[src] = (img.naturalWidth / img.naturalHeight) < 1.1;
+              }
+              resolve(null);
+            };
+            img.onerror = () => resolve(null); // Ignore individual failures to not block forever
             img.src = src;
-            img.onload = resolve;
-            img.onerror = resolve; // Ignore individual failures to not block forever
           });
         })
       );
 
+      setImageRatios(ratios);
       setIsLoading(false);
     }
     loadImages();
@@ -236,23 +243,21 @@ export default function App() {
         {/* Background for cards with non-16:9 aspect ratio */}
         <div 
           className="absolute inset-0 z-0 bg-black transition-opacity duration-1000"
-          style={{ opacity: isVertical ? 1 : 0 }}
+          style={{ opacity: imageRatios[IMAGES[cardIndex]] ? 1 : 0 }}
         >
           <img src={usfqBg} className="w-full h-full object-cover" alt="usfq background" />
         </div>
 
-        <img
+        <div
           key={IMAGES[cardIndex]}
-          src={IMAGES[cardIndex]}
-          onLoad={(e) => {
-            const img = e.currentTarget;
-            const ratio = img.naturalWidth / img.naturalHeight;
-            // Threshold: If ratio is less than 1.1 (vertical or square), use contain + background
-            setIsVertical(ratio < 1.1);
+          style={{ 
+            backgroundImage: `url(${IMAGES[cardIndex]})`,
+            backgroundSize: imageRatios[IMAGES[cardIndex]] ? 'contain' : 'cover',
+            backgroundPosition: 'center',
+            backgroundRepeat: 'no-repeat',
+            willChange: "opacity" 
           }}
-          style={{ willChange: "opacity" }}
-          className={`absolute inset-0 w-full h-full z-10 shadow-2xl transition-all duration-700 ${isVertical ? 'object-contain' : 'object-cover'}`}
-          alt="background"
+          className="absolute inset-0 w-full h-full z-10 shadow-2xl transition-all duration-700"
         />
       </div>
 
