@@ -1,13 +1,631 @@
 <!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>USFQ TV Display</title>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;700;800;900&display=swap" rel="stylesheet">
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<!-- Google image servers reject some Referer values (e.g. localhost) with 429; send none -->
+<meta name="referrer" content="no-referrer">
+<title>USFQ TV Display</title>
+<!-- Non-blocking font: if the network is slow at boot the page still renders with a fallback font -->
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Montserrat:900&display=swap" media="print" onload="this.media='all'">
+<!--
+  Plain HTML + CSS + ES5 on purpose: Samsung Tizen browsers (Chromium 47+) run this
+  without React, framer-motion, SystemJS or polyfills. No CSS grid, no flex gap,
+  no clip-path, no backdrop-filter, no CSS variables.
+-->
+<style>
+  html, body {
+    margin: 0; padding: 0; width: 100%; height: 100%;
+    overflow: hidden; background: #000;
+  }
+  ::-webkit-scrollbar { display: none; }
+  * { box-sizing: border-box; -webkit-box-sizing: border-box; }
+
+  /* Everything is laid out on a fixed 1920x1080 stage that is scaled to the screen */
+  #stage {
+    position: absolute; left: 0; top: 0; width: 1920px; height: 1080px;
+    overflow: hidden; background: #000;
+    font-family: 'Montserrat', 'Arial Black', Arial, sans-serif; font-weight: 900;
+    -webkit-transform-origin: 0 0; transform-origin: 0 0;
+  }
+  .layer {
+    position: absolute; left: 0; top: 0; width: 100%; height: 100%;
+    opacity: 0;
+    -webkit-transition: opacity 1s ease-in-out; transition: opacity 1s ease-in-out;
+  }
+  .layer.on { opacity: 1; }
+  .fill {
+    position: absolute; left: 0; top: 0; width: 100%; height: 100%;
+    background-position: center; background-repeat: no-repeat; background-size: cover;
+  }
+
+  #alumni {
+    position: absolute; top: 24px; right: 32px; z-index: 100;
+    padding: 16px 40px; border-radius: 16px;
+    background: rgba(0,0,0,0.6); border: 1px solid rgba(255,255,255,0.1);
+    box-shadow: 0 25px 50px rgba(0,0,0,0.25);
+  }
+  #alumni img { display: block; height: 64px; }
+
+  /* ---------- Cards ---------- */
+  #cards { z-index: 10; }
+  #cardBg {
+    background-image: url(usfq-bg.jpg); opacity: 0;
+    -webkit-transition: opacity 1s; transition: opacity 1s;
+  }
+  #cardImg { z-index: 1; }
+
+  /* ---------- Red de beneficios ---------- */
+  #dragons {
+    z-index: 20; background-color: #000; background-image: url(usfq-bg-dark.jpg);
+    background-position: center; background-repeat: no-repeat; background-size: cover;
+  }
+  #title {
+    position: absolute; left: 0; top: 150px; width: 100%;
+    text-align: center; color: #fff; font-size: 104px; line-height: 1;
+    letter-spacing: 0.2em; text-indent: 0.2em; margin: 0;
+    text-shadow: 0 4px 20px rgba(0,0,0,0.8), 0 0 30px rgba(250,204,21,0.6);
+  }
+  .row {
+    position: absolute; left: 0; width: 100%; text-align: center; white-space: nowrap;
+    font-size: 0; /* removes inline-block whitespace */
+  }
+  #rowTop { top: 330px; }
+  #rowRed { top: 735px; }
+  .col { display: inline-block; vertical-align: top; margin: 0 48px; text-align: center; }
+  .col h2 {
+    margin: 24px 0 0; font-size: 32px; line-height: 1.2;
+    letter-spacing: 0.4em; text-indent: 0.4em; text-transform: uppercase;
+  }
+  #rowRed .col h2 { margin-top: 22px; font-size: 40px; }
+
+  .card {
+    position: relative; display: inline-block; vertical-align: top;
+    width: 384px; height: 288px;
+    border: 12px solid #fff; border-radius: 24px; background: #fff; overflow: hidden;
+    box-shadow: 0 30px 60px rgba(0,0,0,0.8);
+    -webkit-transform: scaleX(0.94); transform: scaleX(0.94); /* the old rotateY(-20deg) without 3D cost */
+    -webkit-perspective: 1200px; perspective: 1200px;
+  }
+  #rowRed .card { width: 288px; height: 216px; border-width: 9px; border-radius: 18px; }
+  #rowRed .card + .card { margin-left: 30px; }
+  .card.empty { background: #171717; border-color: #171717; }
+  .card.empty .msg {
+    position: absolute; left: 0; top: 50%; width: 100%; margin-top: -14px;
+    color: rgba(255,255,255,0.4); font-size: 22px; line-height: 28px; letter-spacing: 0.05em;
+  }
+  .half { position: absolute; left: 0; width: 100%; height: 50%; overflow: hidden; background: #fff; }
+  .half.top { top: 0; }
+  .half.bot { top: 50%; }
+  .face {
+    position: absolute; left: 0; width: 100%; height: 200%; padding: 24px;
+    background-position: center; background-repeat: no-repeat; background-size: contain;
+    -webkit-background-origin: content-box; background-origin: content-box;
+    -webkit-background-clip: content-box; background-clip: content-box;
+  }
+  #rowRed .face { padding: 18px; }
+  .half.top .face { top: 0; }
+  .half.bot .face { top: -100%; }
+  .flap { z-index: 2; visibility: hidden; -webkit-backface-visibility: hidden; backface-visibility: hidden; }
+  .flap.top { -webkit-transform-origin: 50% 100%; transform-origin: 50% 100%; }
+  .flap.bot { -webkit-transform-origin: 50% 0; transform-origin: 50% 0; }
+  .hinge {
+    position: absolute; left: 0; top: 50%; width: 100%; height: 1px; margin-top: -1px; z-index: 3;
+    background: rgba(209,213,219,0.5);
+  }
+
+  #status {
+    position: absolute; left: 0; top: 0; width: 100%; height: 100%; z-index: 50;
+    color: rgba(255,255,255,0.5); text-align: center; padding-top: 500px;
+    font-size: 32px; letter-spacing: 0.2em;
+  }
+  #status small { display: block; margin-top: 16px; font-size: 16px; color: rgba(255,255,255,0.25); }
+  #debug {
+    position: absolute; left: 8px; bottom: 8px; z-index: 200; display: none;
+    font: 14px/1.3 monospace; color: #0f0; background: rgba(0,0,0,0.7); padding: 6px 10px;
+    white-space: pre; max-width: 1200px; overflow: hidden;
+  }
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="alumni"><img src="alumni.png" alt="Alumni"></div>
+
+  <div id="cards" class="layer">
+    <div id="cardBg" class="fill"></div>
+    <div id="cardImg" class="fill"></div>
+  </div>
+
+  <div id="dragons" class="layer">
+    <h1 id="title">RED DE BENEFICIOS</h1>
+    <div id="rowTop" class="row"></div>
+    <div id="rowRed" class="row"></div>
+  </div>
+
+  <div id="status">CARGANDO SISTEMA<small id="statusSub">PRE-DESCARGANDO CONTENIDOS</small></div>
+  <div id="debug"></div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  // ================= CONFIG =================
+  var API_KEY = 'AIzaSyBAO3kDdm5D3BYEUrqoCclpZYBKGgXcZt0';
+  var FOLDERS = {
+    artes:    '1GaYLdPvpyeMTAVjMhoEsy3q8aqOxoD4b',
+    platinum: '11I02dhti7MEmG5MOUo24nvjr-5iDEi4I',
+    red:      '1XvYlQAwfophzuaK2suzvsJpPy-3knFu8',
+    golden:   '14hnNDGvQYt4uoCMiC7f4MY8icdkYEnDY',
+    silver:   '1CSqFvsCF9tz-m5J1hxTYD_8jJadQ-6wX'
+  };
+  // Images are requested already resized by Google. Never ask for the original
+  // file (=s0): some logos are 20-27 megapixels (~100 MB of RAM each on the TV).
+  var ARTE_SIZE = 'w1920-h1080';
+  var LOGO_SIZE = 'w480-h360';
+
+  var CARD_MS = 10000;          // each card on screen
+  var FADE_MS = 1000;           // fade between cards / phases
+  var LOGO_MS = 2500;           // time per logo in the rolodex
+  var FLIP_MS = 1500;           // flip animation length
+  var IMG_TIMEOUT_MS = 20000;   // give up on a single image after this
+  var LIST_REFRESH_MS = 15 * 60 * 1000;    // re-read Drive (new uploads show up on their own)
+  var RELOAD_AFTER_MS = 6 * 60 * 60 * 1000; // full page reload, clears any TV browser leak
+  var CACHE_KEY = 'teleusfq-lists-v1';
+  var DEBUG = /[?&]debug=1/.test(location.search);
+
+  // ================= HELPERS =================
+  var $ = function (id) { return document.getElementById(id); };
+  var startedAt = new Date().getTime();
+  var logLines = [];
+
+  function log(msg) {
+    if (window.console && console.log) console.log('[TV] ' + msg);
+    if (!DEBUG) return;
+    var t = Math.round((new Date().getTime() - startedAt) / 1000);
+    logLines.push(t + 's ' + msg);
+    if (logLines.length > 12) logLines.shift();
+    $('debug').style.display = 'block';
+    $('debug').textContent = logLines.join('\n');
+  }
+
+  window.onerror = function (msg, src, line) {
+    log('ERROR ' + msg + ' @' + line);
+    return true; // never show a broken screen; the watchdog keeps things moving
+  };
+
+  function setTransform(el, value) {
+    el.style.webkitTransform = value;
+    el.style.transform = value;
+  }
+  function setTransition(el, value) {
+    el.style.webkitTransition = value ? '-webkit-transform ' + value : 'none';
+    el.style.transition = value ? 'transform ' + value : 'none';
+  }
+  function bg(el, url) {
+    el.style.backgroundImage = url ? 'url("' + url + '")' : 'none';
+  }
+  function toggle(el, on) {
+    el.className = el.className.replace(/\s*\bon\b/g, '') + (on ? ' on' : '');
+  }
+  function forEach(arr, fn) { for (var i = 0; i < arr.length; i++) fn(arr[i], i); }
+
+  // Fit the 1920x1080 stage to whatever resolution the TV browser reports
+  function fitStage() {
+    var w = window.innerWidth || document.documentElement.clientWidth || 1920;
+    var h = window.innerHeight || document.documentElement.clientHeight || 1080;
+    var s = Math.min(w / 1920, h / 1080);
+    var stage = $('stage');
+    setTransform(stage, 'scale(' + s + ')');
+    stage.style.left = Math.round((w - 1920 * s) / 2) + 'px';
+    stage.style.top = Math.round((h - 1080 * s) / 2) + 'px';
+  }
+  window.onresize = fitStage;
+  fitStage();
+
+  // ================= DRIVE =================
+  function xhrJson(url, timeout, cb) {
+    var done = false;
+    var xhr = new XMLHttpRequest();
+    function finish(err, data) { if (!done) { done = true; cb(err, data); } }
+    xhr.open('GET', url, true);
+    xhr.timeout = timeout;
+    xhr.onreadystatechange = function () {
+      if (xhr.readyState !== 4) return;
+      if (xhr.status === 200) {
+        try { finish(null, JSON.parse(xhr.responseText)); } catch (e) { finish('bad json'); }
+      } else {
+        finish('http ' + xhr.status);
+      }
+    };
+    xhr.ontimeout = function () { finish('timeout'); };
+    xhr.onerror = function () { finish('network'); };
+    setTimeout(function () { finish('timeout'); }, timeout + 1000);
+    xhr.send();
+  }
+
+  function fetchFolder(folderId, size, cb) {
+    var q = encodeURIComponent("'" + folderId + "' in parents and trashed = false");
+    var url = 'https://www.googleapis.com/drive/v3/files?q=' + q + '&key=' + API_KEY +
+      '&fields=' + encodeURIComponent('files(id,name,mimeType,imageMediaMetadata(width,height))') +
+      '&orderBy=name&pageSize=200';
+    xhrJson(url, 15000, function (err, data) {
+      if (err) return cb(err);
+      var items = [];
+      forEach(data.files || [], function (f) {
+        var isImage = (f.mimeType && f.mimeType.indexOf('image/') === 0) ||
+          /\.(jpe?g|png|webp|gif)$/i.test(f.name || '');
+        if (!isImage) return;
+        var meta = f.imageMediaMetadata || {};
+        items.push({
+          id: f.id,
+          // Stable URLs (thumbnailLink from the API expires after a few hours)
+          urls: [
+            'https://lh3.googleusercontent.com/d/' + f.id + '=' + size,
+            'https://drive.google.com/thumbnail?id=' + f.id + '&sz=' + size
+          ],
+          // Same rule as before: "portrait-ish" images are shown whole over the USFQ background
+          portrait: meta.width && meta.height ? (meta.width / meta.height) < 1.1 : null
+        });
+      });
+      cb(null, items);
+    });
+  }
+
+  function fetchAll(cb) {
+    var names = ['artes', 'platinum', 'red', 'golden', 'silver'];
+    var result = {};
+    var pending = names.length;
+    var failed = false;
+    forEach(names, function (name) {
+      fetchFolder(FOLDERS[name], name === 'artes' ? ARTE_SIZE : LOGO_SIZE, function (err, items) {
+        if (err) { failed = true; log('drive ' + name + ': ' + err); }
+        result[name] = items || [];
+        if (--pending === 0) cb(failed ? 'failed' : null, result);
+      });
+    });
+  }
+
+  function saveCache(lists) {
+    try { localStorage.setItem(CACHE_KEY, JSON.stringify(lists)); } catch (e) {}
+  }
+  function readCache() {
+    try { return JSON.parse(localStorage.getItem(CACHE_KEY) || 'null'); } catch (e) { return null; }
+  }
+
+  // ================= IMAGE LOADING =================
+  // state per item: undefined | 'loading' | 'ok' | 'error'
+  function loadImage(item, cb) {
+    if (item.state === 'ok' || item.state === 'error') return cb(item.state === 'ok');
+    if (item.waiters) { item.waiters.push(cb); return; }
+    item.waiters = [cb];
+    item.state = 'loading';
+
+    var attempt = 0;
+    function tryNext() {
+      if (attempt >= item.urls.length) return finish(false);
+      var url = item.urls[attempt++];
+      var img = new Image();
+      var settled = false;
+      var timer = setTimeout(function () { settle(false); }, IMG_TIMEOUT_MS);
+      function settle(ok) {
+        if (settled) return;
+        settled = true;
+        clearTimeout(timer);
+        img.onload = img.onerror = null;
+        if (ok) {
+          item.src = url;
+          if (item.portrait === null && img.naturalHeight) {
+            item.portrait = (img.naturalWidth / img.naturalHeight) < 1.1;
+          }
+          finish(true);
+        } else {
+          tryNext();
+        }
+      }
+      img.onload = function () { settle(true); };
+      img.onerror = function () { settle(false); };
+      img.src = url;
+    }
+    function finish(ok) {
+      item.state = ok ? 'ok' : 'error';
+      if (!ok) log('image failed ' + item.id);
+      var w = item.waiters;
+      item.waiters = null;
+      forEach(w, function (fn) { fn(ok); });
+    }
+    tryNext();
+  }
+
+  // Loads a few images at a time instead of all at once (TV network/memory are limited)
+  function loadSequential(items, cb) {
+    var i = 0, active = 0, max = 3, finished = false;
+    function pump() {
+      while (active < max && i < items.length) {
+        active++;
+        loadImage(items[i++], function () { active--; pump(); });
+      }
+      if (active === 0 && i >= items.length && !finished) { finished = true; if (cb) cb(); }
+    }
+    pump();
+  }
+
+  // ================= STATE =================
+  var lists = null;        // lists in use
+  var nextLists = null;    // fresh lists waiting for the next cycle
+  var phaseTimer = null;
+
+  function later(fn, ms) {
+    clearTimeout(phaseTimer);
+    phaseTimer = setTimeout(function () {
+      try { fn(); } catch (e) { log('phase error ' + e.message); later(startCycle, 5000); }
+    }, ms);
+  }
+
+  // Keep already-loaded state when the same file is still in the folder
+  function mergeLists(fresh) {
+    if (!lists) return fresh;
+    var known = {};
+    forEach(['artes', 'platinum', 'red', 'golden', 'silver'], function (n) {
+      forEach(lists[n] || [], function (it) { known[it.id] = it; });
+    });
+    forEach(['artes', 'platinum', 'red', 'golden', 'silver'], function (n) {
+      for (var i = 0; i < fresh[n].length; i++) {
+        var old = known[fresh[n][i].id];
+        if (old && old.state === 'ok' && old.urls[0] === fresh[n][i].urls[0]) fresh[n][i] = old;
+      }
+    });
+    return fresh;
+  }
+
+  function refreshLists() {
+    fetchAll(function (err, fresh) {
+      if (!err) {
+        saveCache(fresh);
+        nextLists = fresh;
+        log('lists refreshed');
+      }
+      setTimeout(refreshLists, err ? 60000 : LIST_REFRESH_MS);
+    });
+  }
+
+  // ================= CARDS PHASE =================
+  var cardIndex = 0;
+  var cardsLayer = $('cards'), cardImg = $('cardImg'), cardBg = $('cardBg');
+
+  function startCycle() {
+    if (nextLists) { lists = mergeLists(nextLists); nextLists = null; }
+    maybeReload();
+
+    cardIndex = 0;
+    showCard();
+  }
+
+  function showCard() {
+    var artes = lists.artes;
+    if (cardIndex >= artes.length) {
+      if (artes.length === 0) return showFallbackCard();
+      return goDragons();
+    }
+    var item = artes[cardIndex];
+    loadImage(item, function (ok) {
+      if (!ok) { cardIndex++; return later(showCard, 0); }
+      bg(cardImg, item.src);
+      cardImg.style.backgroundSize = item.portrait ? 'contain' : 'cover';
+      cardBg.style.opacity = item.portrait ? '1' : '0';
+      toggle(cardsLayer, true);
+      log('card ' + (cardIndex + 1) + '/' + artes.length);
+
+      // Preload the next card while this one is on screen, then warm up the
+      // (small) logos so they are ready for the dragons phase
+      var next = artes[cardIndex + 1];
+      loadImage(next || artes[0], function () {
+        if (cardIndex === 0) loadSequential([].concat(lists.platinum, lists.golden, lists.silver, lists.red));
+      });
+
+      later(function () {
+        toggle(cardsLayer, false);
+        cardIndex++;
+        later(showCard, FADE_MS);
+      }, CARD_MS);
+    });
+  }
+
+  function showFallbackCard() {
+    bg(cardImg, 'usfq-bg.jpg');
+    cardImg.style.backgroundSize = 'cover';
+    cardBg.style.opacity = '0';
+    toggle(cardsLayer, true);
+    later(function () { toggle(cardsLayer, false); later(goDragons, FADE_MS); }, CARD_MS);
+  }
+
+  // ================= ROLODEX (split-flap) =================
+  // Built from overflow:hidden halves instead of clip-path, and the DOM is
+  // created once per card and reused: no new nodes or images on every flip.
+  function Rolodex(items, small) {
+    this.items = [];
+    var self = this;
+    forEach(items, function (it) { if (it.state !== 'error') self.items.push(it); });
+    this.index = 0;
+    this.timers = [];
+
+    var card = document.createElement('div');
+    card.className = 'card';
+    this.el = card;
+
+    if (this.items.length === 0) {
+      card.className += ' empty';
+      card.innerHTML = '<div class="msg">PRÓXIMAMENTE</div>';
+      return;
+    }
+
+    function half(cls) {
+      var h = document.createElement('div');
+      h.className = 'half ' + cls;
+      var f = document.createElement('div');
+      f.className = 'face';
+      h.appendChild(f);
+      card.appendChild(h);
+      return { box: h, face: f };
+    }
+    this.top = half('top');
+    this.bot = half('bot');
+    this.flapTop = half('top flap');
+    this.flapBot = half('bot flap');
+    var hinge = document.createElement('div');
+    hinge.className = 'hinge';
+    card.appendChild(hinge);
+
+    var first = this.src(0);
+    bg(this.top.face, first);
+    bg(this.bot.face, first);
+  }
+
+  Rolodex.prototype.src = function (i) {
+    var it = this.items[i % this.items.length];
+    return it.src || it.urls[0];
+  };
+
+  Rolodex.prototype.flip = function () {
+    if (this.items.length < 2) return;
+    var self = this;
+    var cur = this.src(this.index);
+    var next = this.src(this.index + 1);
+    this.index++;
+    var half = FLIP_MS / 2;
+
+    // Static halves: next on top (revealed as the flap falls), current on the bottom
+    bg(this.top.face, next);
+    bg(this.bot.face, cur);
+
+    // Top flap shows current and falls 0 -> -90deg
+    var ft = this.flapTop.box, fb = this.flapBot.box;
+    bg(this.flapTop.face, cur);
+    bg(this.flapBot.face, next);
+    setTransition(ft, ''); setTransform(ft, 'rotateX(0deg)');
+    setTransition(fb, ''); setTransform(fb, 'rotateX(90deg)');
+    ft.style.visibility = 'visible';
+    fb.style.visibility = 'visible';
+    void ft.offsetWidth; // commit start state before animating
+    setTransition(ft, half + 'ms ease-in');
+    setTransform(ft, 'rotateX(-90deg)');
+
+    // Bottom flap shows next and lands 90 -> 0deg
+    this.timers.push(setTimeout(function () {
+      ft.style.visibility = 'hidden';
+      setTransition(fb, half + 'ms ease-out');
+      setTransform(fb, 'rotateX(0deg)');
+    }, half));
+
+    this.timers.push(setTimeout(function () {
+      bg(self.bot.face, next);
+      fb.style.visibility = 'hidden';
+      self.timers = [];
+    }, FLIP_MS + 50));
+  };
+
+  Rolodex.prototype.stop = function () {
+    forEach(this.timers, function (t) { clearTimeout(t); });
+    this.timers = [];
+  };
+
+  // ================= DRAGONS PHASE =================
+  var dragonsLayer = $('dragons');
+  var rolodexes = [];
+  var flipTimer = null;
+
+  function column(title, color, glow, cards) {
+    var col = document.createElement('div');
+    col.className = 'col';
+    forEach(cards, function (r) { col.appendChild(r.el); rolodexes.push(r); });
+    var h = document.createElement('h2');
+    h.style.color = color;
+    h.style.textShadow = '0 0 15px ' + glow;
+    h.appendChild(document.createTextNode(title));
+    col.appendChild(h);
+    return col;
+  }
+
+  function buildDragons() {
+    stopDragons();
+    var top = $('rowTop'), red = $('rowRed');
+    top.innerHTML = '';
+    red.innerHTML = '';
+
+    var redHalf = Math.ceil(lists.red.length / 2);
+    top.appendChild(column('PLATINUM', '#E5E4E2', 'rgba(229,228,226,0.6)', [new Rolodex(lists.platinum)]));
+    top.appendChild(column('GOLDEN', '#fbbf24', 'rgba(251,191,36,0.6)', [new Rolodex(lists.golden)]));
+    top.appendChild(column('SILVER', '#9ca3af', 'rgba(156,163,175,0.6)', [new Rolodex(lists.silver)]));
+    red.appendChild(column('RED', '#ef4444', 'rgba(239,68,68,0.6)', [
+      new Rolodex(lists.red.slice(0, redHalf)),
+      new Rolodex(lists.red.slice(redHalf).reverse())
+    ]));
+  }
+
+  function stopDragons() {
+    clearInterval(flipTimer);
+    forEach(rolodexes, function (r) { r.stop(); });
+    rolodexes = [];
+  }
+
+  function goDragons() {
+    buildDragons();
+    toggle(dragonsLayer, true);
+
+    var maxLogos = 1;
+    forEach(rolodexes, function (r) { if (r.items.length > maxLogos) maxLogos = r.items.length; });
+    log('dragons, ' + maxLogos + ' logos max');
+
+    flipTimer = setInterval(function () {
+      forEach(rolodexes, function (r) { r.flip(); });
+    }, LOGO_MS);
+
+    later(function () {
+      toggle(dragonsLayer, false);
+      later(function () { stopDragons(); startCycle(); }, FADE_MS);
+    }, maxLogos * LOGO_MS);
+  }
+
+  // ================= WATCHDOG =================
+  // Reload the whole page every few hours, but only if the server answers,
+  // so a network outage never leaves the TV on a browser error page.
+  function maybeReload() {
+    if (new Date().getTime() - startedAt < RELOAD_AFTER_MS) return;
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', location.pathname + '?ping=' + new Date().getTime(), true);
+    xhr.timeout = 10000;
+    xhr.onreadystatechange = function () {
+      if (xhr.readyState === 4 && xhr.status === 200) location.reload();
+    };
+    xhr.send(); // keep playing meanwhile; the reload happens when the ping succeeds
+  }
+
+  // ================= BOOT =================
+  function begin(initial) {
+    lists = initial;
+    var status = $('status');
+    status.parentNode.removeChild(status);
+    startCycle();
+    setTimeout(refreshLists, LIST_REFRESH_MS);
+  }
+
+  var bootTries = 0;
+  function boot() {
+    bootTries++;
+    fetchAll(function (err, fresh) {
+      if (!err) { saveCache(fresh); return begin(fresh); }
+      // No network yet (common right after the TV turns on): use the last list
+      // we saw, or keep retrying instead of staying stuck.
+      var cached = readCache();
+      if (cached && bootTries >= 2) { log('using cached lists'); begin(cached); setTimeout(refreshLists, 30000); return; }
+      $('statusSub').textContent = 'ESPERANDO CONEXIÓN… (INTENTO ' + bootTries + ')';
+      setTimeout(boot, Math.min(5000 * bootTries, 30000));
+    });
+  }
+  boot();
+})();
+</script>
+</body>
 </html>
